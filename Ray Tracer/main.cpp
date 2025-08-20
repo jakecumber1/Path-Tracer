@@ -1,15 +1,47 @@
 #include "color.h"
+#include "ray.h"
 #include "vec3.h"
 
 #include <iostream>
 
+color ray_color(const ray& r) {
+	vec3 unit_direction = unit_vector(r.direction());
+	auto a = 0.5 * (unit_direction.y() + 1.0);
+	//render out a blue to white gradients
+	return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+}
+
+
 int main() {
 
-	//Below is the graphics equivalent of "hello world"
+	//Image
 
-	//image size
-	int image_width = 256;
-	int image_height = 256;
+	auto aspect_ratio = 16.0 / 9.0;
+	int image_width = 400;
+	
+	//make sure image height is at least 1
+	int image_height = int(image_width / aspect_ratio);
+	image_height = (image_height < 1) ? 1 : image_height;
+
+	//Camera
+
+	auto focal_length = 1.0;
+	auto viewport_height = 2.0;
+	auto viewport_width = viewport_height * (double(image_width) / image_height);
+	auto camera_center = point3(0, 0, 0);
+
+	//Calculate vectors across horizontal and down vertical viewport edges
+	auto viewport_u = vec3(viewport_width, 0, 0);
+	auto viewport_v = vec3(0, -viewport_height, 0);
+
+	//Calculate the horizontal and vertical delta vectors from pixel to pixel.
+	auto pixel_delta_u = viewport_u / image_width;
+	auto pixel_delta_v = viewport_v / image_height;
+
+	//calculate location of upper left pixel
+	auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+	auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
 
 	//Render
 
@@ -27,7 +59,7 @@ int main() {
 
 	P3 specifies we're making an ascii ppm, which says pixel values
 	are seperated by whitespace (space, tab, newline...)
-	P6 is another type of ppm header format, specifying a binary version instead of raw numbers
+	P6 is another type of ppm header format, specifying a raw  binary version instead of ascii characters
 	this is faster but much, much harder to read and write.
 
 
@@ -39,8 +71,15 @@ int main() {
 		//Progress bar for particularly long renders
 		std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
 		for (int i = 0; i < image_width; i++) {
-			color pixel_color = color(double(i) / (image_width - 1), double(j) / (image_height - 1), 0);
+			//the pixels center is just (0, 0) + the horizontal change between pixels times i and the vertical change times j
+			auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
+			//could be made into a unit vector, but for now this is simpler and faster.
+			auto ray_direction = pixel_center - camera_center;
+			ray r(camera_center, ray_direction);
+
+			color pixel_color = ray_color(r);
 			write_color(std::cout, pixel_color);
+
 		}
 	}
 	std::clog << "\rDone.                \n";
