@@ -4,24 +4,49 @@
 
 #include <iostream>
 
-//hardcode a sphere into our image or now
-bool hit_sphere(const point3& center, double radius, const ray& r) {
+//hardcode a sphere into our image for now
+//returning the normal of our sphere hit point
+double hit_sphere(const point3& center, double radius, const ray& r) {
+	//oc = vector from ray origina to sphere center
 	vec3 oc = center - r.origin();
-	auto a = dot(r.direction(), r.direction());
-	auto b = -2.0 * dot(r.direction(), oc);
-	auto c = dot(oc, oc) - radius * radius;
-	auto discriminant = b * b - 4 * a * c;
-	return (discriminant >= 0);
+	//coefficients for quadratic formula
+	//remember the quadratic equation we are solving is at^2 + bt + c = 0
+	//length of squared direction
+	auto a = r.direction().length_squared();
+	//sub b for -2h, allowing us to simplify the discriminant to
+	//4(h^2 - ac)
+	//allowing us to pull the 4 our and end up with 2h - 2 * sqrt(h^2 - ac) / 2a
+	//which simplifies to
+	//h - sqrt(h^2 - ac) / a
+	//b = 2(D * oc), so let's simplify it to h = D * oc, and work with h directly.
+	auto h = dot(r.direction(), oc);
+	auto c = oc.length_squared() - radius * radius;
+	//b^2 - 4ac part of quadratic equation
+	auto discriminant = h*h - a * c;
+	if (discriminant < 0) {
+		//no real solutions, ray missed the sphere
+		return -1.0;
+	}
+	else {
+		//return the nearest "t" where the ray intersects the sphere
+		return (h - std::sqrt(discriminant)) / a;
+	}
 }
 
 
 color ray_color(const ray& r) {
-	if (hit_sphere(point3(0, 0, -1), 0.5, r)) {
-		return color(1, 0, 0);
-	};
+	//determines if the ray hits the sphere
+	auto t = hit_sphere(point3(0, 0, -1), 0.5, r);
+	//if so compute the surface normal at the hit point
+	if (t > 0.0) {
+		//hit point minus center, normalized
+		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
+		//here we map [-1,1] range of the normal to [0, 1] color range
+		return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+	}
+	//no hit, draw background gradient
 	vec3 unit_direction = unit_vector(r.direction());
 	auto a = 0.5 * (unit_direction.y() + 1.0);
-	//render out a blue to white gradients
 	return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
 }
 
