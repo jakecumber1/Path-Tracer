@@ -40,6 +40,14 @@ public:
 	double length_squared() const {
 		return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
 	}
+	//determines if vector is close to 0 in all dimensions
+	bool near_zero() const {
+		//returns true if vector is close to 0 in all dimensions
+		auto s = 1e-8;
+		//fabs = floating point absolute value
+		return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < 1) && (std::fabs(e[2]) < 1);
+	}
+
 	//returns a vector of random double elements
 	static vec3 random() {
 		return vec3(random_double(), random_double(), random_double());
@@ -131,6 +139,13 @@ inline vec3 random_on_hemisphere(const vec3& normal) {
 		//just invert it and we have a valid vector
 		return -on_unit_sphere;
 	} 
+}
+//Computes the reflection ray off a surface
+inline vec3 reflect(const vec3& v, const vec3& n) {
+	/*v is the ray going towards the surface
+	n is the surface normal, a unit vector pointing out of the surface
+	remove the component of the vector in the direction of the normal, then flip it*/
+	return v - 2 * dot(v, n) * n;
 }
 
 #endif

@@ -3,11 +3,16 @@
 
 //Class for objects which can be hit by rays, not a table of hits!
 #include "consts_n_utils.h"
+//It's been a while since i've done something like this
+//putting a class like this just means we promise to define material later
+//this will keep us from getting a circular reference issue in material.h
+class material;
 
 class hit_record {
 public:
 	point3 p;
 	vec3 normal;
+	shared_ptr<material> mat;
 	double t;
 	//decision time, do we want normals to always point outwards or always point against the ray?
 	//if normals always point outwards, we can check if a ray is inside or outside the sphere by checking it's direction against the normals

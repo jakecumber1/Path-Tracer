@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "hittable.h"
+#include "material.h"
 
 class camera {
 public:
@@ -111,12 +112,13 @@ private:
 		hit_record rec;
 		//ignore hits below 0.001 to account for shadow acne problem
 		if (world.hit(r, interval(0.001, infinity), rec)) {
-			//want our diffusions to be more likely to be near the normal
-			vec3 direction = rec.normal + random_unit_vector();
-			/*currently hard coded, when a material reflects 100% of the light
-			it's considered a white material, and when 0% it's black
-			here we'll choose 50% and expect our image to output a gray color */
-			return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
+			//account for material type and how the ray should behave when coming in contact with the surface
+			ray scattered;
+			color attenuation;
+			if (rec.mat->scatter(r, rec, attenuation, scattered)) {
+				return attenuation * ray_color(scattered, depth - 1, world);
+			}
+			return color(0, 0, 0);
 		}
 		//no hit, draw background gradient
 		vec3 unit_direction = unit_vector(r.direction());
