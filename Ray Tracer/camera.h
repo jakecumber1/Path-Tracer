@@ -7,6 +7,9 @@ class camera {
 public:
 	double aspect_ratio = 1.0; //ratio of width over height
 	int image_width = 100; //rendered image width in pixel count
+	int samples_per_pixel = 10; //count of random samples per pixel
+
+
 	//renders an ppm image in P3 format.
 	void render(const hittable& world) {
 		initialize();
@@ -39,14 +42,12 @@ public:
 			//Progress bar for particularly long renders
 			std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
 			for (int i = 0; i < image_width; i++) {
-				//the pixels center is just (0, 0) + the horizontal change between pixels times i and the vertical change times j
-				auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-				//could be made into a unit vector, but for now this is simpler and faster.
-				auto ray_direction = pixel_center - center;
-				ray r(center, ray_direction);
-
-				color pixel_color = ray_color(r, world);
-				write_color(std::cout, pixel_color);
+				color pixel_color(0, 0, 0);
+				for (int sample = 0; sample < samples_per_pixel; sample++) {
+					ray r = get_ray(i, j);
+					pixel_color += ray_color(r, world);
+				}
+				write_color(std::cout, pixel_samples_scale * pixel_color);
 
 			}
 		}
@@ -55,6 +56,7 @@ public:
 private:
 
 	int image_height; //rendered image height
+	double pixel_samples_scale; //color scale factor for a sum of pixel samlpes
 	point3 center; //camera center
 	point3 pixel00_loc; //location of pixel 0,0
 	vec3 pixel_delta_u; //horizontal difference between this pixel and the one on the right
@@ -64,6 +66,8 @@ private:
 		//make sure image height is at least 1
 		image_height = int(image_width / aspect_ratio);
 		image_height = (image_height < 1) ? 1 : image_height;
+
+		pixel_samples_scale = 1.0 / samples_per_pixel;
 
 		center = point3(0, 0, 0);
 
@@ -82,6 +86,21 @@ private:
 		//calculate location of upper left pixel
 		auto viewport_upper_left = center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
 		pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+	}
+	//constructs a ray originating from camera origin and directed at random sample point around pixel[i,j]
+	ray get_ray(int i, int j) const {
+		//construct a camera ray originating from origin and direct at randomly sampled point around pixel location i,j
+		auto offset = sample_square();
+		auto pixel_sample = pixel00_loc + ((i + offset.x()) * pixel_delta_u) + ((j + offset.y()) * pixel_delta_v);
+
+		auto ray_origin = center;
+		auto ray_direction = pixel_sample - ray_origin;
+
+		return ray(ray_origin, ray_direction);
+	}
+	//return vector to random point in a [-.5,-.5]-[+.5,+.5] unit square.
+	vec3 sample_square() const {
+		return vec3(random_double() - 0.5, random_double() - 0.5, 0);
 	}
 
 	color ray_color(const ray& r, const hittable& world) const {

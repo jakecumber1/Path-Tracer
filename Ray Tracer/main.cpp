@@ -19,6 +19,8 @@ int main() {
 	//set our ratio and image width
 	cam.aspect_ratio = 16.0 / 9.0;
 	cam.image_width = 400;
+	//antialiasing effect with random point selection.
+	cam.samples_per_pixel = 100;
 
 	cam.render(world);
 
