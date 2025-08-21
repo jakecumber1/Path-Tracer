@@ -7,7 +7,7 @@ class sphere : public hittable {
 public:
 	sphere(const point3& center, double radius) : center(center), radius(std::fmax(0, radius)) {};
 
-	bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
+	bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
 		//oc = vector from ray origina to sphere center
 		vec3 oc = center - r.origin();
 		//coefficients for quadratic formula
@@ -32,9 +32,9 @@ public:
 		auto sqrtd = std::sqrt(discriminant);
 		//+ or - part of the quadratic form
 		auto root = (h - sqrtd) / a;
-		if (root <= ray_tmin || ray_tmax <= root) {
+		if (!ray_t.surrounds(root)) {
 			root = (h + sqrtd) / a;
-			if (root <= ray_tmin || ray_tmax <= root) {
+			if (!ray_t.surrounds(root)) {
 				return false;
 			}
 		}

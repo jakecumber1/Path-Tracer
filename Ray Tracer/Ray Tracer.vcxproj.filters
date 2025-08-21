@@ -41,5 +41,8 @@
     <ClInclude Include="consts_n_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="interval.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
