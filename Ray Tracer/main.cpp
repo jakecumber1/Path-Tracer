@@ -1,48 +1,13 @@
-#include "color.h"
-#include "ray.h"
-#include "vec3.h"
-
-#include <iostream>
-
-//hardcode a sphere into our image for now
-//returning the normal of our sphere hit point
-double hit_sphere(const point3& center, double radius, const ray& r) {
-	//oc = vector from ray origina to sphere center
-	vec3 oc = center - r.origin();
-	//coefficients for quadratic formula
-	//remember the quadratic equation we are solving is at^2 + bt + c = 0
-	//length of squared direction
-	auto a = r.direction().length_squared();
-	//sub b for -2h, allowing us to simplify the discriminant to
-	//4(h^2 - ac)
-	//allowing us to pull the 4 our and end up with 2h - 2 * sqrt(h^2 - ac) / 2a
-	//which simplifies to
-	//h - sqrt(h^2 - ac) / a
-	//b = 2(D * oc), so let's simplify it to h = D * oc, and work with h directly.
-	auto h = dot(r.direction(), oc);
-	auto c = oc.length_squared() - radius * radius;
-	//b^2 - 4ac part of quadratic equation
-	auto discriminant = h*h - a * c;
-	if (discriminant < 0) {
-		//no real solutions, ray missed the sphere
-		return -1.0;
-	}
-	else {
-		//return the nearest "t" where the ray intersects the sphere
-		return (h - std::sqrt(discriminant)) / a;
-	}
-}
+#include "consts_n_utils.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 
-color ray_color(const ray& r) {
-	//determines if the ray hits the sphere
-	auto t = hit_sphere(point3(0, 0, -1), 0.5, r);
-	//if so compute the surface normal at the hit point
-	if (t > 0.0) {
-		//hit point minus center, normalized
-		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
-		//here we map [-1,1] range of the normal to [0, 1] color range
-		return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+color ray_color(const ray& r, const hittable& world) {
+	hit_record rec;
+	if (world.hit(r, 0, infinity, rec)) {
+		return 0.5 * (rec.normal + color(1, 1, 1));
 	}
 	//no hit, draw background gradient
 	vec3 unit_direction = unit_vector(r.direction());
@@ -61,6 +26,12 @@ int main() {
 	//make sure image height is at least 1
 	int image_height = int(image_width / aspect_ratio);
 	image_height = (image_height < 1) ? 1 : image_height;
+
+
+	//World
+	hittable_list world;
+	world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
+	world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
 
 	//Camera
 
@@ -116,7 +87,7 @@ int main() {
 			auto ray_direction = pixel_center - camera_center;
 			ray r(camera_center, ray_direction);
 
-			color pixel_color = ray_color(r);
+			color pixel_color = ray_color(r, world);
 			write_color(std::cout, pixel_color);
 
 		}

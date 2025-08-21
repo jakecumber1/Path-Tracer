@@ -1,8 +1,7 @@
 #ifndef VEC3_H
 #define VEC3_H
-#include <cmath>
-#include <iostream>
 
+#include "consts_n_utils.h"
 class vec3 {
 public:
 	double e[3];
@@ -13,8 +12,8 @@ public:
 	double x() const { return e[0]; }
 	double y() const { return e[1]; }
 	double z() const { return e[2]; }
-	//Negation operator returns all elements in the vec times negative 1
-	vec3 operator~() const { return vec3(-e[0], -e[1], -e[2]); }
+	//Self subtraction operator returns all elements in the vec times negative 1
+	vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
 	//x, y, z element access operator, read only
 	double operator[](int i) const { return e[i]; }
 	//x, y, z element access, but returns reference (i.e allows assignment).
@@ -63,6 +62,8 @@ inline std::ostream& operator<< (std::ostream& out, const vec3& v) {
 inline vec3 operator+(const vec3& u, const vec3& v) {
 	return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
+
+
 //vector subtraction
 inline vec3 operator-(const vec3& u, const vec3& v) {
 	return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
