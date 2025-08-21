@@ -115,7 +115,7 @@ private:
 			vec3 direction = rec.normal + random_unit_vector();
 			/*currently hard coded, when a material reflects 100% of the light
 			it's considered a white material, and when 0% it's black
-			here we'll choose 50% and expect our image to output a gray color*/
+			here we'll choose 50% and expect our image to output a gray color */
 			return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
 		}
 		//no hit, draw background gradient
