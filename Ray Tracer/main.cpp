@@ -39,6 +39,14 @@ int main() {
 	cam.samples_per_pixel = 100;
 	//set max depth to keep ray_color from recursing too far
 	cam.max_depth = 50;
+	//set vfov
+	cam.vfov = 90;
+
+	//set camera position and angle
+	cam.lookfrom = point3(-2, 2, 1);
+	cam.lookat = point3(0, 0, -1);
+	cam.vup = vec3(0, 1, 0);
+
 
 	cam.render(world);
 
