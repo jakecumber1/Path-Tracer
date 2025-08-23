@@ -64,9 +64,9 @@ int main() {
 	camera cam;
 	//set our ratio and image width
 	cam.aspect_ratio = 16.0 / 9.0;
-	cam.image_width = 1200;
+	cam.image_width = 3840;
 	//antialiasing effect with random point selection in a square.
-	cam.samples_per_pixel = 500;
+	cam.samples_per_pixel = 10;
 
 	//set maximum recursion for ray_color
 	cam.max_depth = 50;
