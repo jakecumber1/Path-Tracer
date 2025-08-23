@@ -1,5 +1,5 @@
 # Path Tracer
-![alt text](https://github.com/jakecumber1/Path-Tracer/blob/master/Ray%20Tracer/first_final_render.ppm)
+![alt text](https://github.com/jakecumber1/Path-Tracer/blob/master/Ray%20Tracer/first_final_render.ppm?raw=true)
 
 A path tracing renderer written in C++ following this guide: <https://raytracing.github.io/books/RayTracingInOneWeekend.html>
 
